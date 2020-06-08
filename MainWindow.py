@@ -31,11 +31,11 @@ class MainWindow(QtWidgets.QMainWindow):
             self.strikeout = \
             self.insert_bar = \
             self.insert_menu = \
-        super(MainWindow, self).__init__(*args, **kwargs)
+            super(MainWindow, self).__init__(*args, **kwargs)
         self.setWindowIcon(QIcon("icons/write.png"))
         self.BAR_ICON_SIZE = 36
         self.editor = TextEdit()
-        self.editor.setLineWrapMode(QTextEdit.NoWrap)
+        # self.editor.setLineWrapMode(QTextEdit.NoWrap)  # Знімає режим автоматичного переносу рядка
         self.setCentralWidget(self.editor)
         self.path = ""
         self.menu_bar = self.menuBar()
@@ -51,7 +51,8 @@ class MainWindow(QtWidgets.QMainWindow):
         self.editor.cursorPositionChanged.connect(self.cursor_position_changed)
 
     def init_bars(self):
-        color = 'background-color:#BF9A7B; border: 2px solid 	#BF9A7B	 '
+        color = 'QToolBar {background-color:#BF9A7B; border: 2px solid #BF9A7B;} QToolButton:hover {' \
+                'background-color:#2CA0A6} '
         self.file_bar = QToolBar()
         self.file_bar.setStyleSheet(str(color))
         self.file_bar.setIconSize(QSize(self.BAR_ICON_SIZE, self.BAR_ICON_SIZE))
@@ -86,7 +87,6 @@ class MainWindow(QtWidgets.QMainWindow):
                                             QtCore.Qt.CTRL + QtCore.Qt.Key_K)
 
         export_pdf = file_menu.addAction(QIcon("icons/pdf.png"), "Export PDF", self.export_to_pdf)
-
         file_menu.addSeparator()
 
         file_menu.addAction(QIcon("icons/close.png"), "Close", self.close,
@@ -139,19 +139,21 @@ class MainWindow(QtWidgets.QMainWindow):
         self.color_button.setFixedWidth(self.BAR_ICON_SIZE * 1.5)
         self.font_bar.addAction(QIcon("icons/font-color.png"), "Font color",
                                 lambda: self.font_color(self.color_button, self.color_font_dialog, False))
-        self.color_button.clicked.connect( lambda: self.font_color(self.color_button, self.color_font_dialog, False))
+        self.color_button.clicked.connect(lambda: self.font_color(self.color_button, self.color_font_dialog, False))
         self.font_bar.addWidget(self.color_button)
 
         self.color_font_background_dialog = QColorDialog()
         self.background_color_button = QPushButton()
         self.background_color_button.setFixedHeight(self.BAR_ICON_SIZE)
-        self.background_color_button.setFixedWidth(self.BAR_ICON_SIZE*1.5)
-        back_ground = self.font_bar.addAction(QIcon("icons/highlight.png"), "Background font color",
-                                lambda: self.font_color(self.background_color_button, self.color_font_background_dialog,
-                                                        True))
+        self.background_color_button.setFixedWidth(self.BAR_ICON_SIZE * 1.5)
+        self.font_bar.addAction(QIcon("icons/highlight.png"), "Background font color",
+                                              lambda: self.font_color(self.background_color_button,
+                                                                      self.color_font_background_dialog,
+                                                                      True))
 
-        self.background_color_button.clicked.connect(lambda: self.font_color(self.background_color_button, self.color_font_background_dialog,
-                                                        True))
+        self.background_color_button.clicked.connect(
+            lambda: self.font_color(self.background_color_button, self.color_font_background_dialog,
+                                    True))
         self.background_color_button.setToolTip("Background font color")
 
         self.font_bar.addWidget(self.background_color_button)
@@ -244,31 +246,32 @@ class MainWindow(QtWidgets.QMainWindow):
     def font_format(self):
         font, ok = self.font_dialog.getFont()
         if ok:
-            print(type(font))
             self.font_dialog.setCurrentFont(font)
             self.editor.setCurrentFont(font)
             self.fonts.setCurrentFont(font)
 
     def current_format_changed(self):
-        current_format = self.editor.currentCharFormat()
-        self.font_size_box.setValue(self.editor.currentFont().pointSize())
-        self.bold.setChecked(self.editor.fontWeight() == QFont.Bold)
-        self.italic.setChecked(self.editor.fontItalic())
-        self.underline.setChecked(self.editor.fontUnderline())
-        self.strikeout.setChecked(current_format.fontStrikeOut())
-        self.color_button.setStyleSheet("background-color:" + self.editor.textColor().name())
-        self.background_color_button.setStyleSheet("background-color:" + self.editor.textBackgroundColor().name())
+        if not self.editor.textCursor().hasSelection():
+            current_format = self.editor.currentCharFormat()
+            self.font_size_box.setValue(self.editor.currentFont().pointSize())
+            self.bold.setChecked(self.editor.fontWeight() == QFont.Bold)
+            self.italic.setChecked(self.editor.fontItalic())
+            self.underline.setChecked(self.editor.fontUnderline())
+            self.strikeout.setChecked(current_format.fontStrikeOut())
+            self.color_button.setStyleSheet("background-color:" + self.editor.textColor().name())
+            self.background_color_button.setStyleSheet("background-color:" + self.editor.textBackgroundColor().name())
 
     def cursor_position_changed(self):
-        self.fonts.setCurrentFont(self.editor.currentFont())
-        self.font_size_box.setValue(self.editor.fontPointSize())
-        self.left.setChecked(self.editor.alignment() == Qt.AlignLeft)
+        if not self.editor.textCursor().hasSelection():
+            self.fonts.setCurrentFont(self.editor.currentFont())
+            self.font_size_box.setValue(self.editor.fontPointSize())
+            self.left.setChecked(self.editor.alignment() == Qt.AlignLeft)
 
-        self.center.setChecked(self.editor.alignment() == Qt.AlignCenter)
+            self.center.setChecked(self.editor.alignment() == Qt.AlignCenter)
 
-        self.right.setChecked(self.editor.alignment() == Qt.AlignRight)
+            self.right.setChecked(self.editor.alignment() == Qt.AlignRight)
 
-        self.justify.setChecked(self.editor.alignment() == Qt.AlignJustify)
+            self.justify.setChecked(self.editor.alignment() == Qt.AlignJustify)
 
     def font_color(self, color_button, color_dialog, background_color: bool):
         if background_color:
@@ -331,7 +334,6 @@ class MainWindow(QtWidgets.QMainWindow):
         path, _ = QFileDialog.getOpenFileName(self, "Відкрити файл", QtCore.QDir.homePath(),
                                               "All files (*.*);; HTML (*.html);; DOC (*.doc)")
         if str(path):
-            print(path)
             try:
                 with open(path, 'rU') as f:
                     text = f.read()
