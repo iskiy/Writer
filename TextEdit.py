@@ -43,14 +43,10 @@ class TextEdit(QtWidgets.QTextEdit):
                     cursor.insertImage(u.toLocalFile())
 
                 else:
-                    # If we hit a non-image or non-local URL break the loop and fall out
-                    # to the super call & let Qt handle it
                     break
 
             else:
-                # If all were valid images, finish here.
                 return
-
 
         elif source.hasImage():
             image = source.imageData()

@@ -1,4 +1,4 @@
-from PyQt5.QtGui import QTextTableFormat, QColor
+from PyQt5.QtGui import QTextTableFormat, QColor, QTextTable, QTextTableCell
 from PyQt5.QtWidgets import QDialog, QLabel, QSpinBox, QGridLayout, QPushButton, QColorDialog
 
 
