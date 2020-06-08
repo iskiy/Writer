@@ -31,11 +31,11 @@ class MainWindow(QtWidgets.QMainWindow):
             self.strikeout = \
             self.insert_bar = \
             self.insert_menu = \
+            self.line_wrap_mode = \
             super(MainWindow, self).__init__(*args, **kwargs)
         self.setWindowIcon(QIcon("icons/write.png"))
         self.BAR_ICON_SIZE = 36
         self.editor = TextEdit()
-        # self.editor.setLineWrapMode(QTextEdit.NoWrap)  # Знімає режим автоматичного переносу рядка
         self.setCentralWidget(self.editor)
         self.path = ""
         self.menu_bar = self.menuBar()
@@ -110,6 +110,14 @@ class MainWindow(QtWidgets.QMainWindow):
         paste = self.edit_menu.addAction(QIcon("icons/paste.png"), "Paste", self.editor.paste,
                                          QKeySequence.Paste)
         cut = self.edit_menu.addAction(QIcon("icons/cut.png"), "Cut", self.editor.cut, QKeySequence.Cut)
+        self.edit_menu.addSeparator()
+        self.line_wrap_mode = self.edit_menu.addAction(QIcon("icons/hastag.png"), "Change line wrap mode",
+                                                       self.change_line_wrap_mode)
+        self.line_wrap_mode.setToolTip("If active then automatic line feed is active,"
+                                       " but it is only visual")
+
+        self.line_wrap_mode.setCheckable(True)
+        self.line_wrap_mode.setChecked(True)
 
         self.file_bar.addSeparator()
         self.file_bar.addAction(undo)
@@ -117,6 +125,7 @@ class MainWindow(QtWidgets.QMainWindow):
         self.file_bar.addAction(copy)
         self.file_bar.addAction(paste)
         self.file_bar.addAction(cut)
+        self.file_bar.addAction(self.line_wrap_mode)
 
     def init_font_menu(self):
         self.font_menu = self.menu_bar.addMenu("&Font")
@@ -147,9 +156,9 @@ class MainWindow(QtWidgets.QMainWindow):
         self.background_color_button.setFixedHeight(self.BAR_ICON_SIZE)
         self.background_color_button.setFixedWidth(self.BAR_ICON_SIZE * 1.5)
         self.font_bar.addAction(QIcon("icons/highlight.png"), "Background font color",
-                                              lambda: self.font_color(self.background_color_button,
-                                                                      self.color_font_background_dialog,
-                                                                      True))
+                                lambda: self.font_color(self.background_color_button,
+                                                        self.color_font_background_dialog,
+                                                        True))
 
         self.background_color_button.clicked.connect(
             lambda: self.font_color(self.background_color_button, self.color_font_background_dialog,
@@ -428,6 +437,14 @@ class MainWindow(QtWidgets.QMainWindow):
                 self.save_file()
             else:
                 e.ignore()
+
+    def change_line_wrap_mode(self):
+        if self.editor.lineWrapMode() != QTextEdit.NoWrap:
+            self.editor.setLineWrapMode(QTextEdit.NoWrap)
+            self.line_wrap_mode.setChecked(False)
+        elif self.editor.lineWrapMode() == QTextEdit.NoWrap:
+            self.editor.setLineWrapMode(QTextEdit.WidgetWidth)
+            self.line_wrap_mode.setChecked(True)
 
     def insert_table(self):
         table_dialog = TableInsert(self.editor)
